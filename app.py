@@ -63,7 +63,7 @@ def create_app(db_name, testing=False):
         """
 
         cupcake = Cupcake(flavor=request.json["flavor"], size=request.json["size"],
-                          rating=request.json["rating"], image=request.json["image"])
+                          rating=request.json["rating"], image=request.json.get("image"))
 
         db.session.add(cupcake)
         db.session.commit()
