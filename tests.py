@@ -68,6 +68,20 @@ class CupcakeViewsTestCase(TestCase):
                 ]
             })
 
+    def test_list_no_cupcakes(self):
+        """Tests returning an empty list when there are no cupcakes."""
+
+        # Arrange
+        db.session.query(Cupcake).delete()
+
+        # Act
+        with app.test_client() as client:
+            resp = client.get("/api/cupcakes")
+
+        # Assert
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.json, {"cupcakes": []})
+
     def test_get_cupcake(self):
         with app.test_client() as client:
             url = f"/api/cupcakes/{self.cupcake.id}"
@@ -84,6 +98,20 @@ class CupcakeViewsTestCase(TestCase):
                     "image": "http://test.com/cupcake.jpg"
                 }
             })
+
+    def test_get_nonexistent_cupcake(self):
+        """Tests returning a 404 HTTP status code when a cupcake does not exist."""
+
+        # Arrange
+        cupcake_id = 99
+
+        # Act
+        with app.test_client() as client:
+            url = f"/api/cupcakes/{cupcake_id}"
+            resp = client.get(url)
+
+        # Assert
+            self.assertEqual(resp.status_code, 404)
 
     def test_create_cupcake(self):
         with app.test_client() as client:
