@@ -1,15 +1,15 @@
 "use strict";
 
 $(document).ready(() => {
-    const cupcakeApp = new CupcakeApp();
-    cupcakeApp.getCupcakes();
+    new CupcakeApp();
+    CupcakeApp.getCupcakes();
 });
 
 class CupcakeApp {
     static IMAGE_WIDTH = 200;
 
     constructor() {
-        $("#form-cupcake").submit(this.createCupcake.bind(this));
+        $("#form-cupcake").submit(CupcakeApp.createCupcake.bind(this));
         $("#form-search").submit(this.searchCupcakes.bind(this));
     }
 
@@ -18,7 +18,7 @@ class CupcakeApp {
      *
      * @param {String} flavor The cupcake flavor.
      */
-    async getCupcakes(flavor) {
+    static async getCupcakes(flavor) {
         $("#cupcake-list").empty();
 
         let response;
@@ -31,7 +31,7 @@ class CupcakeApp {
         }
 
         for (const cupcake of response.data.cupcakes) {
-            $("#cupcake-list").append(this.generateCupcakeHtml(cupcake));
+            $("#cupcake-list").append(CupcakeApp.generateCupcakeHtml(cupcake));
         }
     }
 
@@ -40,7 +40,7 @@ class CupcakeApp {
      *
      * @param {Event} e The form submission event for creating a cupcake.
      */
-    async createCupcake(e) {
+    static async createCupcake(e) {
         e.preventDefault();
 
         const flavor = $("#form-cupcake__input-flavor").val();
@@ -65,7 +65,7 @@ class CupcakeApp {
 
         $("#form-cupcake").get(0).reset();
 
-        $("#cupcake-list").append(this.generateCupcakeHtml(response.data.cupcake));
+        $("#cupcake-list").append(CupcakeApp.generateCupcakeHtml(response.data.cupcake));
     }
 
     /**
@@ -76,7 +76,7 @@ class CupcakeApp {
     searchCupcakes(e) {
         e.preventDefault();
         const flavor = $("#form-search__input-flavor").val();
-        this.getCupcakes(flavor);
+        CupcakeApp.getCupcakes(flavor);
     }
 
     /**
@@ -85,7 +85,7 @@ class CupcakeApp {
      * @param {Object} cupcake The cupcake object containg keys flavor, size, rating, and image.
      * @returns HTML string for the li element, representing a cupcake.
      */
-    generateCupcakeHtml(cupcake) {
+    static generateCupcakeHtml(cupcake) {
         return `
         <li>
             <img src="${cupcake.image}" alt="${cupcake.flavor} cupcake image" width="${CupcakeApp.IMAGE_WIDTH}" />
