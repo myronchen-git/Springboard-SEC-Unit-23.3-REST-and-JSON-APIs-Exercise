@@ -1,3 +1,4 @@
+from types import MappingProxyType
 from unittest import TestCase
 
 from app import create_app
@@ -66,6 +67,33 @@ class CupcakeViewsTestCase(TestCase):
                         "image": "http://test.com/cupcake.jpg"
                     }
                 ]
+            })
+
+    def test_list_cupcakes_filter_flavor(self):
+        """Tests retrieving a list of cupcakes that contains a specified flavor name."""
+
+        # Arrange
+        query_term = "testflavor99"
+
+        CUPCAKE_DATA_99 = MappingProxyType({
+            "flavor": "TestFlavor99",
+            "size": "TestSize99",
+            "rating": 9,
+            "image": "http://test.com/cupcake99.jpg"
+        })
+
+        cupcake99 = Cupcake(**CUPCAKE_DATA_99)
+        db.session.add(cupcake99)
+        db.session.commit()
+
+        # Act
+        with app.test_client() as client:
+            resp = client.get(f"/api/cupcakes?flavor={query_term}")
+
+        # Assert
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.json, {
+                "cupcakes": [{"id": cupcake99.id} | CUPCAKE_DATA_99]
             })
 
     def test_list_no_cupcakes(self):

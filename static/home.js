@@ -10,18 +10,21 @@ class CupcakeApp {
 
     constructor() {
         $("#form-cupcake").submit(this.createCupcake.bind(this));
+        $("#form-search").submit(this.searchCupcakes.bind(this));
     }
 
     /**
      * Gets a list of cupcakes and displays them on the webpage.
+     *
+     * @param {String} flavor The cupcake flavor.
      */
-    async getCupcakes() {
+    async getCupcakes(flavor) {
         $("#cupcake-list").empty();
 
         let response;
 
         try {
-            response = await axios.get("/api/cupcakes");
+            response = await axios.get("/api/cupcakes", { params: { flavor: flavor } });
         } catch (error) {
             displayAPIError(error);
             return;
@@ -63,6 +66,17 @@ class CupcakeApp {
         $("#form-cupcake").get(0).reset();
 
         $("#cupcake-list").append(this.generateCupcakeHtml(response.data.cupcake));
+    }
+
+    /**
+     * Searches for a specified cupcake flavor.
+     *
+     * @param {Event} e The form submission event for searching a cupcake.
+     */
+    searchCupcakes(e) {
+        e.preventDefault();
+        const flavor = $("#form-search__input-flavor").val();
+        this.getCupcakes(flavor);
     }
 
     /**

@@ -3,6 +3,10 @@
 {% block title %}Cupcakes Homepage{% endblock %}
 <!---->
 {% block content %}
+<form id="form-search">
+  <input id="form-search__input-flavor" type="text" placeholder="Search" />
+  <button type="submit"><i class="bi bi-search"></i></button>
+</form>
 <h1>Cupcakes</h1>
 <ul id="cupcake-list"></ul>
 <form id="form-cupcake" action="/api/cupcakes" method="post">

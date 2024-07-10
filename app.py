@@ -38,7 +38,9 @@ def create_app(db_name, testing=False):
         Returns JSON {'cupcakes': [{id, flavor, size, rating, image}, ...]}.
         """
 
-        cupcakes = db.session.query(Cupcake).all()
+        flavor = request.args.get("flavor", "")
+        cupcakes = db.session.query(Cupcake).filter(
+            Cupcake.flavor.ilike(f"%{flavor}%")).all()
         serialized_cupcakes = [cupcake.serialize() for cupcake in cupcakes]
 
         return jsonify(cupcakes=serialized_cupcakes)
