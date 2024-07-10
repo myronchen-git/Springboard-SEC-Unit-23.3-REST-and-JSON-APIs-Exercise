@@ -1,6 +1,6 @@
 """Flask app for Cupcakes"""
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 from flask_debugtoolbar import DebugToolbarExtension
 
 from models import Cupcake, connect_db, db
@@ -101,6 +101,12 @@ def create_app(db_name, testing=False):
         db.session.commit()
 
         return jsonify(message="Deleted")
+
+    @app.route("/")
+    def show_home():
+        """ Shows the homepage. """
+
+        return render_template("home.html")
 
     return app
 
