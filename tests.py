@@ -16,19 +16,19 @@ db.create_all()
 
 # --------------------------------------------------
 
-CUPCAKE_DATA = {
+CUPCAKE_DATA = MappingProxyType({
     "flavor": "TestFlavor",
     "size": "TestSize",
     "rating": 5,
     "image": "http://test.com/cupcake.jpg"
-}
+})
 
-CUPCAKE_DATA_2 = {
+CUPCAKE_DATA_2 = MappingProxyType({
     "flavor": "TestFlavor2",
     "size": "TestSize2",
     "rating": 10,
     "image": "http://test.com/cupcake2.jpg"
-}
+})
 
 
 class CupcakeViewsTestCase(TestCase):
@@ -51,22 +51,16 @@ class CupcakeViewsTestCase(TestCase):
         db.session.rollback()
 
     def test_list_cupcakes(self):
+        """Tests returning all cupcakes."""
+
+        # Act
         with app.test_client() as client:
             resp = client.get("/api/cupcakes")
 
+        # Assert
             self.assertEqual(resp.status_code, 200)
-
-            data = resp.json
-            self.assertEqual(data, {
-                "cupcakes": [
-                    {
-                        "id": self.cupcake.id,
-                        "flavor": "TestFlavor",
-                        "size": "TestSize",
-                        "rating": 5,
-                        "image": "http://test.com/cupcake.jpg"
-                    }
-                ]
+            self.assertEqual(resp.json, {
+                "cupcakes": [{"id": self.cupcake.id} | CUPCAKE_DATA]
             })
 
     def test_list_cupcakes_filter_flavor(self):
@@ -111,20 +105,17 @@ class CupcakeViewsTestCase(TestCase):
             self.assertEqual(resp.json, {"cupcakes": []})
 
     def test_get_cupcake(self):
+        """Tests getting a specified cupcake by ID."""
+
+        # Act
         with app.test_client() as client:
             url = f"/api/cupcakes/{self.cupcake.id}"
             resp = client.get(url)
 
+        # Assert
             self.assertEqual(resp.status_code, 200)
-            data = resp.json
-            self.assertEqual(data, {
-                "cupcake": {
-                    "id": self.cupcake.id,
-                    "flavor": "TestFlavor",
-                    "size": "TestSize",
-                    "rating": 5,
-                    "image": "http://test.com/cupcake.jpg"
-                }
+            self.assertEqual(resp.json, {
+                "cupcake": {"id": self.cupcake.id} | CUPCAKE_DATA
             })
 
     def test_get_nonexistent_cupcake(self):
@@ -142,10 +133,16 @@ class CupcakeViewsTestCase(TestCase):
             self.assertEqual(resp.status_code, 404)
 
     def test_create_cupcake(self):
-        with app.test_client() as client:
-            url = "/api/cupcakes"
-            resp = client.post(url, json=CUPCAKE_DATA_2)
+        """Tests creating a cupcake."""
 
+        # Arrange
+        url = "/api/cupcakes"
+
+        # Act
+        with app.test_client() as client:
+            resp = client.post(url, json=dict(CUPCAKE_DATA_2))
+
+        # Assert
             self.assertEqual(resp.status_code, 201)
 
             data = resp.json
@@ -155,12 +152,7 @@ class CupcakeViewsTestCase(TestCase):
             del data['cupcake']['id']
 
             self.assertEqual(data, {
-                "cupcake": {
-                    "flavor": "TestFlavor2",
-                    "size": "TestSize2",
-                    "rating": 10,
-                    "image": "http://test.com/cupcake2.jpg"
-                }
+                "cupcake": CUPCAKE_DATA_2
             })
 
             self.assertEqual(Cupcake.query.count(), 2)
@@ -168,45 +160,47 @@ class CupcakeViewsTestCase(TestCase):
     def test_update_cupcake(self):
         """Tests updating a cupcake."""
 
+        # Act
         with app.test_client() as client:
             url = f"/api/cupcakes/{self.cupcake.id}"
-            resp = client.patch(url, json=CUPCAKE_DATA_2)
+            resp = client.patch(url, json=dict(CUPCAKE_DATA_2))
 
+        # Assert
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(resp.json, {
-                "cupcake": {
-                    "id": self.cupcake.id,
-                    "flavor": "TestFlavor2",
-                    "size": "TestSize2",
-                    "rating": 10,
-                    "image": "http://test.com/cupcake2.jpg"
-                }
+                "cupcake": {"id": self.cupcake.id} | CUPCAKE_DATA_2
             })
 
     def test_update_nonexistent_cupcake(self):
         """Tests updating a cupcake that does not exist."""
 
+        # Act
         with app.test_client() as client:
             url = "/api/cupcakes/99"
-            resp = client.patch(url, json=CUPCAKE_DATA_2)
+            resp = client.patch(url, json=dict(CUPCAKE_DATA_2))
 
+        # Assert
             self.assertEqual(resp.status_code, 404)
 
     def test_delete_cupcake(self):
         """Tests deleting a cupcake."""
 
+        # Act
         with app.test_client() as client:
             url = f"/api/cupcakes/{self.cupcake.id}"
             resp = client.delete(url)
 
+        # Assert
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(resp.json, {"message": "Deleted"})
 
     def test_delete_nonexistent_cupcake(self):
         """Tests deleting a cupcake that does not exist."""
 
+        # Act
         with app.test_client() as client:
             url = "/api/cupcakes/99"
             resp = client.delete(url)
 
+        # Assert
             self.assertEqual(resp.status_code, 404)
