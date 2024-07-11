@@ -3,8 +3,12 @@
 /** Helps display the error in the API response. */
 function displayAPIError(error) {
     if (error.response) {
-        const errorObject = error.response.data.error;
-        alert(`status: ${errorObject.status}\n${errorObject.title}\n${errorObject.message}`);
+        const responseObject = error.response;
+        alert(
+            `status: ${responseObject.status}\n${
+                responseObject.data?.message || responseObject.statusText
+            }`
+        );
     } else if (error.request) {
         alert("Did not receive a response from the server.");
     } else {
