@@ -2,14 +2,14 @@
 
 $(document).ready(() => {
     new CupcakeApp();
-    CupcakeApp.getCupcakes();
+    CupcakeApp.fetchAllCupcakes();
 });
 
 class CupcakeApp {
     static IMAGE_WIDTH = 200;
 
     constructor() {
-        $("#form-cupcake").submit(CupcakeApp.createCupcake.bind(this));
+        $("#form-create-cupcake").submit(CupcakeApp.createCupcake.bind(this));
         $("#form-search").submit(this.searchCupcakes.bind(this));
         $("#cupcake-list").on("click", "button.delete-cupcake", this.deleteCupcake);
         $("#cupcake-list").on("click", "button.edit-cupcake", this.showEditForm);
@@ -21,7 +21,7 @@ class CupcakeApp {
      *
      * @param {String} flavor The cupcake flavor.
      */
-    static async getCupcakes(flavor) {
+    static async fetchAllCupcakes(flavor) {
         $("#cupcake-list").empty();
 
         let response;
@@ -45,10 +45,10 @@ class CupcakeApp {
     static async createCupcake(e) {
         e.preventDefault();
 
-        const flavor = $("#form-cupcake__input-flavor").val();
-        const size = $("#form-cupcake__input-size").val();
-        const rating = $("#form-cupcake__input-rating").val();
-        const image = $("#form-cupcake__input-image").val() || null;
+        const flavor = $("#form-create-cupcake__input-flavor").val();
+        const size = $("#form-create-cupcake__input-size").val();
+        const rating = $("#form-create-cupcake__input-rating").val();
+        const image = $("#form-create-cupcake__input-image").val() || null;
 
         let response;
         try {
@@ -64,8 +64,7 @@ class CupcakeApp {
             return;
         }
 
-        $("#form-cupcake").get(0).reset();
-
+        $("#form-create-cupcake").get(0).reset();
         $("#cupcake-list").append(CupcakeApp.generateCupcakeHtml(response.data.cupcake));
     }
 
@@ -77,7 +76,7 @@ class CupcakeApp {
     searchCupcakes(e) {
         e.preventDefault();
         const flavor = $("#form-search__input-flavor").val();
-        CupcakeApp.getCupcakes(flavor);
+        CupcakeApp.fetchAllCupcakes(flavor);
     }
 
     // can be refactored
@@ -113,16 +112,15 @@ class CupcakeApp {
     }
 
     /**
+     * Update/edit cupcake info.
      *
      * @param {Event} e The form submission event for updating a cupcake.
-     * @returns
      */
     async updateCupcake(e) {
         const $cupcakeListItem = $(this.closest("li[data-cupcake-id]"));
         const cupcakeId = $cupcakeListItem.data("cupcake-id");
 
-        const validity = $(this.closest("form"))[0].reportValidity();
-        if (validity) {
+        if ($(this.closest("form"))[0].reportValidity()) {
             e.preventDefault();
 
             const flavor = $(`#form-edit-cupcake-${cupcakeId}__input-flavor`).val();
@@ -132,6 +130,7 @@ class CupcakeApp {
 
             const data = {};
 
+            // Builds the data object with only non-empty info.
             for (const [field, value] of Object.entries({ flavor, size, rating, image })) {
                 if (value) {
                     data[field] = value;

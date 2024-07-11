@@ -1,6 +1,10 @@
 "use strict";
 
-/** Helps display the error in the API response. */
+/**
+ * Helps display the error in the API response.
+ *
+ * @param {Error} error
+ */
 function displayAPIError(error) {
     if (error.response) {
         const responseObject = error.response;
