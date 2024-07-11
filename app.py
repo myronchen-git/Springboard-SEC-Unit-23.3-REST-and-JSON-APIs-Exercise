@@ -81,15 +81,18 @@ def create_app(db_name, testing=False):
         Returns JSON {'cupcake': {id, flavor, size, rating, image}}.
         """
 
-        query = db.session.query(Cupcake)
-        cupcake = query.get_or_404(cupcake_id)
+        if request.json:
+            query = db.session.query(Cupcake)
+            cupcake = query.get_or_404(cupcake_id)
 
-        query.filter_by(id=cupcake_id).update(request.json)
-        db.session.commit()
+            query.filter_by(id=cupcake_id).update(request.json)
+            db.session.commit()
 
-        serialized_cupcake = cupcake.serialize()
+            serialized_cupcake = cupcake.serialize()
 
-        return jsonify(cupcake=serialized_cupcake)
+            return jsonify(cupcake=serialized_cupcake)
+        else:
+            return (jsonify(message="Empty inputs"), 400)
 
     @app.route("/api/cupcakes/<int:cupcake_id>", methods=["DELETE"])
     def delete_cupcake(cupcake_id):

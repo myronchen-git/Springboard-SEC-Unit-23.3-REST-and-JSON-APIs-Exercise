@@ -12,6 +12,8 @@ class CupcakeApp {
         $("#form-cupcake").submit(CupcakeApp.createCupcake.bind(this));
         $("#form-search").submit(this.searchCupcakes.bind(this));
         $("#cupcake-list").on("click", "button.delete-cupcake", this.deleteCupcake);
+        $("#cupcake-list").on("click", "button.edit-cupcake", this.showEditForm);
+        $("#cupcake-list").on("click", "button.form-edit-cupcake__submit", this.updateCupcake);
     }
 
     /**
@@ -78,6 +80,77 @@ class CupcakeApp {
         CupcakeApp.getCupcakes(flavor);
     }
 
+    // can be refactored
+    /**
+     * Displays the form to edit a cupcake's info.
+     */
+    showEditForm() {
+        const $cupcakeListItem = $(this.closest("li[data-cupcake-id]"));
+        const cupcakeId = $cupcakeListItem.data("cupcake-id");
+
+        $cupcakeListItem.children(":not(:first-child)").remove();
+        $cupcakeListItem.append(`
+            <form id="form-edit-cupcake-${cupcakeId}">
+                <div>
+                    <label for="form-edit-cupcake-${cupcakeId}__input-flavor">Flavor:</label>
+                    <input id="form-edit-cupcake-${cupcakeId}__input-flavor" type="text" name="flavor" required />
+                </div>
+                <div>
+                    <label for="form-edit-cupcake-${cupcakeId}__input-size">Size:</label>
+                    <input id="form-edit-cupcake-${cupcakeId}__input-size" type="text" name="size" required />
+                </div>
+                <div>
+                    <label for="form-edit-cupcake-${cupcakeId}__input-rating">Rating:</label>
+                    <input id="form-edit-cupcake-${cupcakeId}__input-rating" type="number" name="rating" required />
+                </div>
+                <div>
+                    <label for="form-edit-cupcake-${cupcakeId}__input-image">Image:</label>
+                    <input id="form-edit-cupcake-${cupcakeId}__input-image" type="url" name="image" />
+                </div>
+                <button class="form-edit-cupcake__submit" type="submit">Submit</button>
+            </form>
+            `);
+    }
+
+    /**
+     *
+     * @param {Event} e The form submission event for updating a cupcake.
+     * @returns
+     */
+    async updateCupcake(e) {
+        const $cupcakeListItem = $(this.closest("li[data-cupcake-id]"));
+        const cupcakeId = $cupcakeListItem.data("cupcake-id");
+
+        const validity = $(this.closest("form"))[0].reportValidity();
+        if (validity) {
+            e.preventDefault();
+
+            const flavor = $(`#form-edit-cupcake-${cupcakeId}__input-flavor`).val();
+            const size = $(`#form-edit-cupcake-${cupcakeId}__input-size`).val();
+            const rating = $(`#form-edit-cupcake-${cupcakeId}__input-rating`).val();
+            const image = $(`#form-edit-cupcake-${cupcakeId}__input-image`).val();
+
+            const data = {};
+
+            for (const [field, value] of Object.entries({ flavor, size, rating, image })) {
+                if (value) {
+                    data[field] = value;
+                }
+            }
+
+            let response;
+            try {
+                response = await axios.patch(`/api/cupcakes/${cupcakeId}`, data);
+                console.log("Successfully updated cupcake.");
+            } catch (error) {
+                displayAPIError(error);
+                return;
+            }
+
+            $cupcakeListItem.replaceWith(CupcakeApp.generateCupcakeHtml(response.data.cupcake));
+        }
+    }
+
     /**
      * Deletes a cupcake from both the database and webpage.
      */
@@ -113,6 +186,7 @@ class CupcakeApp {
             <p>Size: ${cupcake.size}</p>
             <p>Rating: ${cupcake.rating}</p>
             <div>
+                <button class="edit-cupcake" type="button">Edit</button>
                 <button class="delete-cupcake" type="button">X</button>
             </div>
         </li>
