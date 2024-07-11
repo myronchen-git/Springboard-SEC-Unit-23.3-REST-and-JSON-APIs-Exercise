@@ -11,6 +11,7 @@ class CupcakeApp {
     constructor() {
         $("#form-cupcake").submit(CupcakeApp.createCupcake.bind(this));
         $("#form-search").submit(this.searchCupcakes.bind(this));
+        $("#cupcake-list").on("click", "button.delete-cupcake", this.deleteCupcake);
     }
 
     /**
@@ -22,7 +23,6 @@ class CupcakeApp {
         $("#cupcake-list").empty();
 
         let response;
-
         try {
             response = await axios.get("/api/cupcakes", { params: { flavor: flavor } });
         } catch (error) {
@@ -49,7 +49,6 @@ class CupcakeApp {
         const image = $("#form-cupcake__input-image").val() || null;
 
         let response;
-
         try {
             response = await axios.post("/api/cupcakes", {
                 flavor: flavor,
@@ -80,6 +79,27 @@ class CupcakeApp {
     }
 
     /**
+     * Deletes a cupcake from both the database and webpage.
+     */
+    async deleteCupcake() {
+        const $cupcakeListItem = $(this.closest("li[data-cupcake-id]"));
+        const cupcakeId = $cupcakeListItem.data("cupcake-id");
+
+        let response;
+        try {
+            response = await axios.delete(`/api/cupcakes/${cupcakeId}`);
+            console.log(
+                `Successfully deleted cupcake.\nResponse message: "${response.data.message}"`
+            );
+        } catch (error) {
+            displayAPIError(error);
+            return;
+        }
+
+        $cupcakeListItem.remove();
+    }
+
+    /**
      * Helper method to create the list item HTML for a cupcake.
      *
      * @param {Object} cupcake The cupcake object containg keys flavor, size, rating, and image.
@@ -87,11 +107,14 @@ class CupcakeApp {
      */
     static generateCupcakeHtml(cupcake) {
         return `
-        <li>
+        <li data-cupcake-id="${cupcake.id}">
             <img src="${cupcake.image}" alt="${cupcake.flavor} cupcake image" width="${CupcakeApp.IMAGE_WIDTH}" />
             <p>Flavor: ${cupcake.flavor}</p>
             <p>Size: ${cupcake.size}</p>
             <p>Rating: ${cupcake.rating}</p>
+            <div>
+                <button class="delete-cupcake" type="button">X</button>
+            </div>
         </li>
         `;
     }
